@@ -1,0 +1,5 @@
+
+# Android local config
+local.properties
+.gradle/
+app/build/
