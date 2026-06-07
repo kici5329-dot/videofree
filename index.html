@@ -13,70 +13,58 @@
     <link rel="apple-touch-icon" href="/videofree/icons/icon-192.png">
     <style>
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{background:#0f0f0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;height:100vh;height:100dvh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent}
-        
-        .header{padding:8px 14px;display:flex;align-items:center;gap:10px;background:#1a1a1a;z-index:10;flex-shrink:0}
-        .logo{font-size:18px;font-weight:700;color:#ff4757}
+        body{background:#0f0f0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100dvh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+        .header{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;flex-shrink:0}
+        .logo{font-size:20px;font-weight:700;color:#ff4757}
         .spacer{flex:1}
-        .install-btn{padding:6px 12px;border:none;border-radius:16px;background:#ff4757;color:#fff;font-size:12px;font-weight:600;cursor:pointer;display:none}
+        .install-btn{display:none;padding:8px 16px;border:none;border-radius:20px;background:#ff4757;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
         .install-btn.show{display:block}
 
-        .tabs{display:flex;padding:6px 14px 0;gap:4px;flex-shrink:0;background:#0f0f0f}
-        .tabs button{flex:1;padding:10px;border:none;background:#1c1c1c;color:#888;font-size:14px;font-weight:500;cursor:pointer;border-radius:10px 10px 0 0;transition:all 0.2s}
-        .tabs button.active{background:#222;color:#ff4757;font-weight:600}
+        .main{padding:0 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+        
+        .input-row{display:flex;gap:8px}
+        .input-row input{flex:1;padding:13px 16px;border:1.5px solid #333;border-radius:14px;background:#1c1c1c;color:#fff;font-size:15px;outline:none;transition:border 0.2s}
+        .input-row input:focus{border-color:#ff4757}
+        .input-row input::placeholder{color:#555}
+        .input-row button{padding:13px 20px;border:none;border-radius:14px;background:#ff4757;color:#fff;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap}
 
-        .panel{display:none;flex-direction:column;flex:1;overflow:hidden}
-        .panel.active{display:flex}
+        .tags{display:flex;gap:6px;flex-wrap:wrap}
+        .tags button{padding:7px 14px;border:1px solid #333;border-radius:20px;background:#1c1c1c;color:#bbb;font-size:12px;cursor:pointer}
+        .tags button:active{background:#ff4757;border-color:#ff4757;color:#fff}
 
-        /* ---- WebView Panel ---- */
-        .web-url-bar{padding:8px 14px;display:flex;gap:8px;flex-shrink:0;background:#0f0f0f}
-        .web-url-bar input{flex:1;padding:11px 14px;border:1.5px solid #333;border-radius:20px;background:#1c1c1c;color:#fff;font-size:14px;outline:none}
-        .web-url-bar input:focus{border-color:#ff4757}
-        .web-url-bar input::placeholder{color:#555}
-        .web-url-bar button{padding:11px 16px;border:none;border-radius:20px;background:#ff4757;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+        .player-area{background:#000;border-radius:8px;overflow:hidden;position:relative;min-height:200px;display:flex;align-items:center;justify-content:center}
+        .player-area video{width:100%;max-height:55vh;background:#000;display:none}
+        .player-area video.show{display:block}
+        .empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;color:#555;padding:40px 20px;text-align:center}
+        .empty-state.hide{display:none}
+        .empty-state svg{opacity:0.3}
 
-        .browser-frame{flex:1;position:relative;background:#fff}
-        .browser-frame iframe{width:100%;height:100%;border:none}
-        .browser-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;gap:10px;pointer-events:none}
-        .browser-placeholder.hide{display:none}
-        .browser-placeholder .ic{font-size:40px;opacity:0.5}
+        .err-msg{color:#ff6b6b;font-size:13px;padding:4px 0;display:none;line-height:1.5}
+        .err-msg.show{display:block}
 
-        .browser-nav{display:flex;gap:4px;padding:8px 14px;background:#1a1a1a;flex-shrink:0}
-        .browser-nav button{padding:8px 16px;border:1px solid #333;border-radius:8px;background:#1c1c1c;color:#ccc;font-size:13px;cursor:pointer;flex:1}
-        .browser-nav button:active{background:#333}
+        .meta{font-size:12px;color:#777;padding:4px 0;display:none;line-height:1.5}
+        .meta.show{display:block}
+        .meta b{color:#ccc}
 
-        /* ---- Video Panel ---- */
-        .vid-url-bar{padding:8px 14px;display:flex;gap:8px;flex-shrink:0;background:#0f0f0f}
-        .vid-url-bar input{flex:1;padding:11px 14px;border:1.5px solid #333;border-radius:20px;background:#1c1c1c;color:#fff;font-size:14px;outline:none}
-        .vid-url-bar input:focus{border-color:#ff4757}
-        .vid-url-bar input::placeholder{color:#555}
-        .vid-url-bar button{padding:11px 16px;border:none;border-radius:20px;background:#ff4757;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+        .controls{display:flex;gap:6px;flex-wrap:wrap}
+        .controls button{padding:9px 14px;border:1px solid #333;border-radius:10px;background:#1c1c1c;color:#ccc;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px}
+        .controls button:active{background:#333}
+        .controls button.on{background:#ff4757;border-color:#ff4757;color:#fff}
 
-        .video-wrap{width:100%;background:#000;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-height:200px}
-        .video-wrap video{width:100%;max-height:55vh;background:#000;display:none}
-        .video-wrap video.show{display:block}
-        .vid-placeholder{display:flex;flex-direction:column;align-items:center;gap:10px;color:#555;padding:40px 20px;text-align:center}
-        .vid-placeholder.hide{display:none}
-        .vid-placeholder .ic{font-size:40px;opacity:0.4}
+        .guide{margin-top:8px;padding:12px;background:#1a1a1a;border-radius:10px;font-size:12px;color:#888;line-height:1.8}
+        .guide summary{color:#ccc;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:4px}
+        .guide summary::marker{color:#ff4757}
+        .guide code{background:#2a2a2a;padding:1px 6px;border-radius:4px;font-size:11px;color:#ff6b81}
 
-        .vid-info{padding:8px 14px;font-size:12px;color:#777;border-top:1px solid #1a1a1a;display:none}
-        .vid-info .t{color:#ccc;font-size:13px}
-
-        .vid-ctrls{padding:6px 14px;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
-        .vid-ctrls button{padding:7px 12px;border:1px solid #333;border-radius:8px;background:#1c1c1c;color:#ccc;font-size:12px;cursor:pointer}
-        .vid-ctrls button.on{background:#ff4757;border-color:#ff4757;color:#fff}
-
-        .vid-history{padding:0 14px 14px;flex:1;overflow-y:auto}
-        .vid-history h3{font-size:12px;color:#666;margin-bottom:6px}
-        .hitem{display:flex;align-items:center;gap:8px;padding:9px;border-radius:8px;margin-bottom:3px;cursor:pointer;font-size:12px;color:#bbb}
+        .history{flex:1;overflow-y:auto;margin-top:4px}
+        .history h3{font-size:12px;color:#666;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+        .hitem{display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;margin-bottom:3px;cursor:pointer;font-size:13px;color:#bbb}
         .hitem:active{background:#1a1a1a}
-        .hitem .del{margin-left:auto;color:#666;font-size:15px;flex-shrink:0}
-        .empty{color:#444;font-size:12px;text-align:center;padding:15px}
+        .hitem span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .hitem .del{color:#666;font-size:16px;flex-shrink:0;padding:2px 6px}
+        .empty{color:#444;font-size:13px;text-align:center;padding:20px}
 
-        .err{color:#ff6b6b;font-size:12px;padding:8px 14px;display:none;flex-shrink:0}
-        .err.show{display:block}
-
-        .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}
+        .toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 24px;border-radius:24px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}
         .toast.show{opacity:1}
     </style>
 </head>
@@ -84,61 +72,49 @@
     <div class="header">
         <span class="logo">▶ VideoFree</span>
         <span class="spacer"></span>
-        <button class="install-btn" id="installBtn" onclick="installApp()">📲 安装</button>
+        <button class="install-btn" id="installBtn">📲 安装应用</button>
     </div>
 
-    <div class="tabs">
-        <button class="active" data-tab="web" onclick="switchTab('web')">🌐 网页浏览</button>
-        <button data-tab="video" onclick="switchTab('video')">🎬 视频播放</button>
-    </div>
+    <div class="main">
+        <div class="input-row">
+            <input type="url" id="urlInput" placeholder="粘贴视频直链 (mp4 / m3u8 / webm)…" autocomplete="off">
+            <button id="playBtn">▶ 播放</button>
+        </div>
 
-    <!-- ====== WebView Panel ====== -->
-    <div class="panel active" id="panel-web">
-        <div class="web-url-bar">
-            <input type="url" id="webUrl" placeholder="输入网址，直接看网页内容…" autocomplete="off">
-            <button id="webGo">前往</button>
+        <div class="tags">
+            <button data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">🐰 Big Buck Bunny</button>
+            <button data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">🐘 Elephant Dream</button>
+            <button data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">🎬 测试短片</button>
         </div>
-        <div class="browser-frame">
-            <iframe id="browser" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="fullscreen" loading="lazy"></iframe>
-            <div class="browser-placeholder" id="browserPH">
-                <span class="ic">🌐</span>
-                <span>输入网址浏览网页内容</span>
-                <span style="font-size:11px;color:#777">支持在 App 内直接查看任何网页</span>
-            </div>
-        </div>
-        <div class="browser-nav">
-            <button onclick="browserGoBack()">⬅ 后退</button>
-            <button onclick="browserGoForward()">前进 ➡</button>
-            <button onclick="browserReload()">🔄 刷新</button>
-            <button onclick="openVideoFromWeb()">🎬 提取视频</button>
-        </div>
-    </div>
 
-    <!-- ====== Video Panel ====== -->
-    <div class="panel" id="panel-video">
-        <div class="vid-url-bar">
-            <input type="url" id="vidUrl" placeholder="粘贴视频直链 (mp4/m3u8)…" autocomplete="off">
-            <button id="vidPlay">▶ 播放</button>
-        </div>
-        <div class="video-wrap" id="videoWrap">
-            <div class="vid-placeholder" id="vidPH">
-                <span class="ic">🎬</span>
-                <span>粘贴视频地址播放</span>
+        <div class="player-area" id="playerArea">
+            <div class="empty-state" id="emptyState">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>输入视频地址开始播放</span>
             </div>
             <video id="videoPlayer" controls playsinline></video>
         </div>
-        <div class="err" id="errMsg"></div>
-        <div class="vid-info" id="vidInfo">
-            <div class="t" id="vidTitle"></div>
-            <div id="vidUrlInfo"></div>
-        </div>
-        <div class="vid-ctrls">
+
+        <div class="err-msg" id="errMsg"></div>
+        <div class="meta" id="metaInfo"></div>
+
+        <div class="controls">
             <button id="pipBtn">🖼 画中画</button>
             <button id="fsBtn">⛶ 全屏</button>
             <button id="loopBtn">🔁 循环</button>
-            <button id="spBtn">1.0x</button>
+            <button id="spBtn">⚡ 1.0x</button>
         </div>
-        <div class="vid-history">
+
+        <details class="guide">
+            <summary>💡 如何获取视频直链？</summary>
+            <p>1. 在浏览器打开目标网页，长按视频 → <b>复制视频地址</b><br>
+               2. 或在网页空白处 → <b>查看页面源代码</b> → 搜索 <code>.mp4</code> <code>.m3u8</code> <code>.ts</code><br>
+               3. 部分网站按 F12 → Network 标签 → 刷新页面 → 筛选 <code>m3u8</code> 或 <code>mp4</code><br>
+               4. 把找到的视频直链粘贴到上方输入框播放<br><br>
+               ⚠️ 粘贴网页地址（如 missav.ws/xxx）无法播放——需提取其中的视频直链。</p>
+        </details>
+
+        <div class="history">
             <h3>📋 播放历史</h3>
             <div id="histList"></div>
         </div>
@@ -147,217 +123,213 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // ==================== TAB SWITCH ====================
-        function switchTab(name) {
-            document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
-            document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + name));
-        }
+        const video = document.getElementById("videoPlayer");
+        const urlInput = document.getElementById("urlInput");
+        const emptyState = document.getElementById("emptyState");
+        const errMsg = document.getElementById("errMsg");
+        const metaInfo = document.getElementById("metaInfo");
+        const histList = document.getElementById("histList");
+        const toastEl = document.getElementById("toast");
+        const installBtn = document.getElementById("installBtn");
+        let currentUrl = "";
+        let hlsInstance = null;
 
-        // ==================== TOAST ====================
-        function toast(msg) {
-            const t = document.getElementById("toast");
-            t.textContent = msg; t.classList.add("show");
-            setTimeout(() => t.classList.remove("show"), 2000);
-        }
-
-        // ==================== PWA INSTALL ====================
+        // ====== Install ======
         let deferredPrompt = null;
-        window.addEventListener("beforeinstallprompt", e => {
+        window.addEventListener("beforeinstallprompt", function(e) {
             e.preventDefault();
             deferredPrompt = e;
-            document.getElementById("installBtn").classList.add("show");
+            installBtn.classList.add("show");
         });
-        window.addEventListener("appinstalled", () => {
-            document.getElementById("installBtn").classList.remove("show");
+        window.addEventListener("appinstalled", function() {
+            installBtn.classList.remove("show");
             deferredPrompt = null;
+            toast("安装成功！");
         });
-        function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById("installBtn").classList.remove("show"); });
-            } else {
-                toast("请使用 Chrome 菜单 → 添加到主屏幕");
-            }
-        }
-
-        // ==================== WEBVIEW ====================
-        const browser = document.getElementById("browser");
-        const browserPH = document.getElementById("browserPH");
-        let webHistory = [];
-
-        document.getElementById("webGo").addEventListener("click", () => {
-            let url = document.getElementById("webUrl").value.trim();
-            if (!url) return;
-            if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://" + url;
-            document.getElementById("webUrl").value = url;
-            browser.src = url;
-            browserPH.classList.add("hide");
-            webHistory.push(url);
-        });
-        document.getElementById("webUrl").addEventListener("keydown", e => {
-            if (e.key === "Enter") document.getElementById("webGo").click();
+        installBtn.addEventListener("click", function() {
+            if (!deferredPrompt) { toast("用 Chrome 菜单 → 添加到主屏幕"); return; }
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(result) {
+                installBtn.classList.remove("show");
+                deferredPrompt = null;
+                toast(result.outcome === "accepted" ? "正在安装…" : "已取消");
+            }).catch(function() {
+                toast("安装失败，请用 Chrome 菜单手动安装");
+            });
         });
 
-        function browserGoBack() { try { browser.contentWindow.history.back(); } catch(e) { toast("无法后退"); } }
-        function browserGoForward() { try { browser.contentWindow.history.forward(); } catch(e) { toast("无法前进"); } }
-        function browserReload() { browser.src = browser.src; }
+        // ====== Toast ======
+        function toast(msg) { toastEl.textContent = msg; toastEl.classList.add("show"); setTimeout(function(){ toastEl.classList.remove("show"); }, 2000); }
 
-        function openVideoFromWeb() {
-            const webUrl = document.getElementById("webUrl").value.trim();
-            if (!webUrl) { toast("请先打开一个网页"); return; }
-            switchTab("video");
-            document.getElementById("vidUrl").value = webUrl;
-            playVideo(webUrl);
-        }
-
-        // ==================== VIDEO PLAYER ====================
-        const video = document.getElementById("videoPlayer");
-        const vidPH = document.getElementById("vidPH");
-        const vidInfo = document.getElementById("vidInfo");
-        const vidTitle = document.getElementById("vidTitle");
-        const vidUrlInfo = document.getElementById("vidUrlInfo");
-        const errMsg = document.getElementById("errMsg");
-        let currentVidUrl = "";
-
-        let playbackHistory = JSON.parse(localStorage.getItem("vf_hist3") || "[]");
-
+        // ====== History ======
+        var playbackHistory = JSON.parse(localStorage.getItem("vf_hist4") || "[]");
         function saveHist(url, title) {
-            playbackHistory = playbackHistory.filter(h => h.url !== url);
-            playbackHistory.unshift({ url, title: title || url, time: Date.now() });
+            playbackHistory = playbackHistory.filter(function(h){ return h.url !== url; });
+            playbackHistory.unshift({url:url, title:title||url, time:Date.now()});
             if (playbackHistory.length > 30) playbackHistory.pop();
-            localStorage.setItem("vf_hist3", JSON.stringify(playbackHistory));
+            localStorage.setItem("vf_hist4", JSON.stringify(playbackHistory));
             renderHist();
         }
         function renderHist() {
-            const list = document.getElementById("histList");
-            if (!playbackHistory.length) { list.innerHTML = '<div class="empty">暂无播放记录</div>'; return; }
-            list.innerHTML = playbackHistory.map((h, i) =>
-                '<div class="hitem" data-url="' + esc(h.url) + '"><span>▶</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(h.title) + '</span><span class="del" data-idx="' + i + '">✕</span></div>'
-            ).join("");
-            list.querySelectorAll(".hitem").forEach(item => {
-                item.addEventListener("click", e => {
+            if (!playbackHistory.length) { histList.innerHTML = '<div class="empty">暂无播放记录</div>'; return; }
+            histList.innerHTML = playbackHistory.map(function(h,i){
+                return '<div class="hitem" data-url="'+esc(h.url)+'"><span>▶</span><span>'+esc(h.title)+'</span><span class="del" data-idx="'+i+'">✕</span></div>';
+            }).join("");
+            histList.querySelectorAll(".hitem").forEach(function(item){
+                item.addEventListener("click", function(e){
                     if (e.target.classList.contains("del")) return;
-                    document.getElementById("vidUrl").value = item.dataset.url;
-                    playVideo(item.dataset.url);
+                    urlInput.value = item.dataset.url; play(item.dataset.url);
                 });
             });
-            list.querySelectorAll(".del").forEach(del => {
-                del.addEventListener("click", e => {
-                    e.stopPropagation();
-                    playbackHistory.splice(parseInt(del.dataset.idx), 1);
-                    localStorage.setItem("vf_hist3", JSON.stringify(playbackHistory));
-                    renderHist();
+            histList.querySelectorAll(".del").forEach(function(del){
+                del.addEventListener("click", function(e){
+                    e.stopPropagation(); playbackHistory.splice(parseInt(del.dataset.idx),1);
+                    localStorage.setItem("vf_hist4", JSON.stringify(playbackHistory)); renderHist();
                 });
             });
         }
-        function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+        function esc(s){ var d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
 
-        function playVideo(url) {
-            url = url.trim();
-            if (!url) return;
-            currentVidUrl = url;
+        // ====== Play ======
+        function play(url) {
+            url = url.trim(); if (!url) return;
+            currentUrl = url;
             errMsg.classList.remove("show"); errMsg.textContent = "";
-
+            
+            // Cleanup previous HLS
+            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
             video.pause(); video.removeAttribute("src"); video.load();
-
-            vidPH.classList.add("hide"); video.classList.add("show");
-            vidInfo.style.display = "block";
-            vidTitle.textContent = "加载中…";
-            vidUrlInfo.textContent = url.length > 70 ? url.slice(0, 70) + "…" : url;
+            
+            emptyState.classList.add("hide"); video.classList.add("show");
+            metaInfo.classList.add("show");
+            metaInfo.innerHTML = "<b>加载中…</b><br>" + (url.length > 70 ? url.slice(0,70)+"…" : url);
 
             video.src = url; video.load();
-
-            const pp = video.play();
+            var pp = video.play();
             if (pp !== undefined) {
-                pp.then(() => { vidTitle.textContent = "正在播放"; saveHist(url, url); })
-                  .catch(e => {
-                      video.muted = true;
-                      video.play().then(() => { vidTitle.textContent = "正在播放（已静音）"; saveHist(url, url); })
-                            .catch(e2 => handleErr(e2, url));
-                  });
+                pp.then(function(){ onPlayOK(url); }).catch(function(e){ onPlayErr(e, url); });
             }
         }
 
-        function handleErr(e, url) {
-            const msg = e.message || "";
-            if (msg.includes("NotSupported") || video.error?.code === 4) {
-                if (url.includes(".m3u8") || url.includes("m3u8")) {
-                    errMsg.textContent = "检测到 m3u8 流，正在加载解码器…";
+        function onPlayOK(url) {
+            errMsg.classList.remove("show");
+            metaInfo.innerHTML = "<b>正在播放</b><br>" + (url.length > 70 ? url.slice(0,70)+"…" : url);
+            saveHist(url, url);
+        }
+
+        function onPlayErr(e, url) {
+            var msg = e.message || "";
+            if (msg.indexOf("NotSupported") !== -1 || (video.error && video.error.code === 4)) {
+                if (url.indexOf(".m3u8") !== -1 || url.indexOf("m3u8") !== -1) {
+                    errMsg.innerHTML = "检测到 m3u8 流，正在加载 HLS 解码器…";
                     errMsg.classList.add("show");
                     loadHls(url);
                 } else {
-                    errMsg.textContent = "无法播放此视频。试试切到「网页浏览」标签，直接输入网页地址查看。";
+                    errMsg.innerHTML = "❌ 无法播放：格式不支持或链接失效。<br>请确认是视频直链（以 .mp4 / .m3u8 / .webm 等结尾），而非网页地址。";
                     errMsg.classList.add("show");
                 }
-            } else if (msg.includes("NotAllowed")) {
-                errMsg.textContent = "播放被阻止，请点视频上的播放按钮。";
+            } else if (msg.indexOf("NotAllowed") !== -1) {
+                errMsg.innerHTML = "播放被阻止，请点击视频上的 ▶ 按钮手动开始。";
                 errMsg.classList.add("show");
             } else {
-                errMsg.textContent = "播放失败：" + (msg || "未知错误");
+                errMsg.innerHTML = "❌ 播放失败：" + (msg || "未知错误");
                 errMsg.classList.add("show");
             }
-            vidTitle.textContent = "播放失败";
+            metaInfo.innerHTML = "<b>播放失败</b>";
         }
 
-        video.addEventListener("loadeddata", () => { errMsg.classList.remove("show"); vidTitle.textContent = "正在播放"; saveHist(currentVidUrl, currentVidUrl); });
-        video.addEventListener("error", () => handleErr(video.error || {}, currentVidUrl));
+        video.addEventListener("loadeddata", function(){ onPlayOK(currentUrl); });
+        video.addEventListener("error", function(){ onPlayErr(video.error||{}, currentUrl); });
 
         function loadHls(url) {
-            if (window.Hls) { tryHls(url); return; }
-            const s = document.createElement("script");
+            if (window.Hls) { doHls(url); return; }
+            var s = document.createElement("script");
             s.src = "https://cdn.jsdelivr.net/npm/hls.js@latest";
-            s.onload = () => tryHls(url);
-            s.onerror = () => { errMsg.textContent = "HLS 解码器加载失败"; errMsg.classList.add("show"); };
+            s.onload = function(){ doHls(url); };
+            s.onerror = function(){ errMsg.innerHTML = "HLS 解码器加载失败，请检查网络。"; errMsg.classList.add("show"); };
             document.head.appendChild(s);
         }
-        function tryHls(url) {
+
+        function doHls(url) {
             try {
                 if (Hls.isSupported()) {
-                    const h = new Hls();
-                    h.loadSource(url); h.attachMedia(video);
-                    h.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); errMsg.classList.remove("show"); vidTitle.textContent = "正在播放 (HLS)"; saveHist(url, url); });
-                    h.on(Hls.Events.ERROR, (evt, d) => { if (d.fatal) { errMsg.textContent = "HLS 流加载失败"; errMsg.classList.add("show"); } });
+                    hlsInstance = new Hls();
+                    hlsInstance.loadSource(url); hlsInstance.attachMedia(video);
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, function(){
+                        video.play().catch(function(){});
+                        errMsg.classList.remove("show");
+                        metaInfo.innerHTML = "<b>正在播放 (HLS)</b>";
+                        saveHist(url, url);
+                    });
+                    hlsInstance.on(Hls.Events.ERROR, function(evt, data){
+                        if (data.fatal) {
+                            switch(data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    errMsg.innerHTML = "❌ 网络错误，HLS 流无法访问。"; break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    errMsg.innerHTML = "❌ 媒体错误，HLS 流已失效。"; break;
+                                default:
+                                    errMsg.innerHTML = "❌ HLS 解码失败。"; break;
+                            }
+                            errMsg.classList.add("show"); hlsInstance.destroy(); hlsInstance = null;
+                        }
+                    });
+                } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                    video.src = url; video.play().catch(function(){});
                 } else {
-                    errMsg.textContent = "浏览器不支持 HLS 流";
+                    errMsg.innerHTML = "❌ 此浏览器不支持 HLS 流播放。";
                     errMsg.classList.add("show");
                 }
-            } catch(e) { errMsg.textContent = "解码失败：" + e.message; errMsg.classList.add("show"); }
+            } catch(e) { errMsg.innerHTML = "❌ 解码失败：" + e.message; errMsg.classList.add("show"); }
         }
 
-        document.getElementById("vidPlay").addEventListener("click", () => playVideo(document.getElementById("vidUrl").value));
-        document.getElementById("vidUrl").addEventListener("keydown", e => { if (e.key === "Enter") playVideo(document.getElementById("vidUrl").value); });
+        document.getElementById("playBtn").addEventListener("click", function(){ play(urlInput.value); });
+        urlInput.addEventListener("keydown", function(e){ if (e.key === "Enter") play(urlInput.value); });
 
-        // Video controls
-        document.getElementById("pipBtn").addEventListener("click", async () => {
+        // Tags
+        document.querySelector(".tags").addEventListener("click", function(e){
+            if (e.target.tagName === "BUTTON" && e.target.dataset.url) {
+                urlInput.value = e.target.dataset.url; play(e.target.dataset.url);
+            }
+        });
+
+        // Controls
+        document.getElementById("pipBtn").addEventListener("click", function(){
             try {
-                if (document.pictureInPictureElement) await document.exitPictureInPicture();
-                else if (document.pictureInPictureEnabled) await video.requestPictureInPicture();
+                if (document.pictureInPictureElement) document.exitPictureInPicture();
+                else if (document.pictureInPictureEnabled) video.requestPictureInPicture();
             } catch(e) { toast("画中画不可用"); }
         });
-        document.getElementById("fsBtn").addEventListener("click", () => {
+        document.getElementById("fsBtn").addEventListener("click", function(){
             if (document.fullscreenElement) document.exitFullscreen();
-            else video.requestFullscreen().catch(() => toast("全屏不可用"));
+            else video.requestFullscreen().catch(function(){ toast("全屏不可用"); });
         });
-        let loopOn = false;
-        document.getElementById("loopBtn").addEventListener("click", function() { loopOn = !loopOn; video.loop = loopOn; this.classList.toggle("on", loopOn); });
-        let speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0], spIdx = 2;
-        document.getElementById("spBtn").addEventListener("click", function() { spIdx = (spIdx + 1) % speeds.length; video.playbackRate = speeds[spIdx]; this.textContent = speeds[spIdx].toFixed(1) + "x"; });
+        var loopOn = false;
+        document.getElementById("loopBtn").addEventListener("click", function(){
+            loopOn = !loopOn; video.loop = loopOn; this.classList.toggle("on", loopOn);
+        });
+        var speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0], spIdx = 2;
+        document.getElementById("spBtn").addEventListener("click", function(){
+            spIdx = (spIdx + 1) % speeds.length; video.playbackRate = speeds[spIdx];
+            this.textContent = "⚡ " + speeds[spIdx].toFixed(1) + "x";
+        });
 
         // Paste
-        document.addEventListener("paste", e => {
-            const t = e.clipboardData?.getData("text");
-            if (t && t.match(/^https?:\/\//)) {
-                const active = document.querySelector(".panel.active").id;
-                if (active === "panel-web") { document.getElementById("webUrl").value = t; toast("链接已粘贴，点前往"); }
-                else { document.getElementById("vidUrl").value = t; toast("链接已粘贴，点播放"); }
+        document.addEventListener("paste", function(e){
+            var t = e.clipboardData ? e.clipboardData.getData("text") : "";
+            if (t && /^https?:\/\//.test(t) && document.activeElement !== urlInput) {
+                urlInput.value = t; toast("链接已粘贴，点击播放");
             }
         });
 
         // Service Worker
-        if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/videofree/sw.js").catch(() => {}); }
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/videofree/sw.js").catch(function(){});
+        }
 
         // Init
         renderHist();
+        urlInput.focus();
     </script>
 </body>
 </html>
