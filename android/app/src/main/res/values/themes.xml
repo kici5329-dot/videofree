@@ -1,0 +1,6 @@
+﻿<resources>
+    <style name="Theme.VideoFree" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorBackground">#FF0F0F0F</item>
+        <item name="android:statusBarColor">#FF0F0F0F</item>
+    </style>
+</resources>
