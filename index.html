@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -432,6 +432,12 @@
         // Init
         renderHistory();
         urlInput.focus();
-    </script>
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/videofree/sw.js').then(() => {
+                console.log('SW registered');
+            }).catch(() => {});
+        }    </script>
 </body>
 </html>
