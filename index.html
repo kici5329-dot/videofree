@@ -1,0 +1,437 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f0f0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>VideoFree - 自由视频播放器</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: #0f0f0f;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header .logo { font-size: 22px; font-weight: 700; color: #ff4757; letter-spacing: -0.5px; }
+        .header .tagline { font-size: 12px; color: #888; }
+
+        .url-bar {
+            padding: 8px 16px 4px;
+            display: flex;
+            gap: 8px;
+        }
+        .url-bar input {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1.5px solid #333;
+            border-radius: 12px;
+            background: #1c1c1c;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .url-bar input:focus { border-color: #ff4757; }
+        .url-bar input::placeholder { color: #666; }
+        .url-bar button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 12px;
+            background: #ff4757;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .url-bar button:active { background: #e8414f; transform: scale(0.96); }
+
+        .quick-links {
+            padding: 4px 16px 8px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .quick-links button {
+            padding: 6px 12px;
+            border: 1px solid #333;
+            border-radius: 20px;
+            background: #1c1c1c;
+            color: #ccc;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-links button:active { background: #ff4757; border-color: #ff4757; color: #fff; }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+        .video-container video {
+            width: 100%;
+            max-height: 60vh;
+            background: #000;
+            display: none;
+        }
+        .video-container video.active { display: block; }
+        .video-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: #555;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .video-placeholder.hidden { display: none; }
+        .video-placeholder .icon { font-size: 48px; opacity: 0.4; }
+
+        .info-panel {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #777;
+            border-top: 1px solid #1a1a1a;
+            flex-shrink: 0;
+        }
+        .info-panel .title { color: #ccc; font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+
+        .controls {
+            padding: 8px 16px 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .controls button {
+            padding: 8px 14px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #1c1c1c;
+            color: #ccc;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .controls button:active { background: #333; }
+        .controls button.on { background: #ff4757; border-color: #ff4757; color: #fff; }
+
+        .history {
+            padding: 0 16px 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .history h3 {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+            color: #bbb;
+            word-break: break-all;
+        }
+        .history-item:hover, .history-item:active { background: #1a1a1a; }
+        .history-item .del {
+            margin-left: auto;
+            padding: 4px 8px;
+            color: #666;
+            cursor: pointer;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .history-item .del:hover { color: #ff4757; }
+        .empty-history { color: #444; font-size: 13px; text-align: center; padding: 20px; }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="logo">▶ VideoFree</span>
+        <span class="tagline">自由视频播放器</span>
+    </div>
+
+    <div class="url-bar">
+        <input type="url" id="urlInput" placeholder="粘贴视频 URL 或 m3u8 地址…" autocomplete="off">
+        <button id="playBtn">▶ 播放</button>
+    </div>
+
+    <div class="quick-links" id="quickLinks">
+        <button data-url="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">测试流 m3u8</button>
+        <button data-url="https://test-streams.mux.dev/test_001/bbb_001.m3u8">Big Buck Bunny</button>
+        <button data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">Bunny MP4</button>
+    </div>
+
+    <div class="video-container" id="videoContainer">
+        <div class="video-placeholder" id="placeholder">
+            <span class="icon">🎬</span>
+            <span>输入视频地址开始播放</span>
+        </div>
+        <video id="videoPlayer" controls playsinline crossorigin="anonymous"></video>
+    </div>
+
+    <div class="info-panel" id="infoPanel" style="display:none">
+        <div class="title" id="infoTitle"></div>
+        <div id="infoUrl"></div>
+    </div>
+
+    <div class="controls">
+        <button id="pipBtn">🖼 画中画</button>
+        <button id="fullscreenBtn">⛶ 全屏</button>
+        <button id="loopBtn">🔁 循环</button>
+        <button id="speedBtn">1.0x</button>
+        <button id="castBtn">📡 投屏</button>
+    </div>
+
+    <div class="history">
+        <h3>📋 播放历史</h3>
+        <div id="historyList"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const video = document.getElementById("videoPlayer");
+        const urlInput = document.getElementById("urlInput");
+        const playBtn = document.getElementById("playBtn");
+        const placeholder = document.getElementById("placeholder");
+        const infoPanel = document.getElementById("infoPanel");
+        const infoTitle = document.getElementById("infoTitle");
+        const infoUrl = document.getElementById("infoUrl");
+        const historyList = document.getElementById("historyList");
+        const toast = document.getElementById("toast");
+
+        let playbackHistory = JSON.parse(localStorage.getItem("vf_history") || "[]");
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 2000);
+        }
+
+        function saveHistory(url, title) {
+            playbackHistory = playbackHistory.filter(h => h.url !== url);
+            playbackHistory.unshift({ url, title: title || url, time: Date.now() });
+            if (playbackHistory.length > 50) playbackHistory.pop();
+            localStorage.setItem("vf_history", JSON.stringify(playbackHistory));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (playbackHistory.length === 0) {
+                historyList.innerHTML = '<div class="empty-history">暂无播放记录</div>';
+                return;
+            }
+            historyList.innerHTML = playbackHistory.map((h, i) => `
+                <div class="history-item" data-url="${escapeHtml(h.url)}">
+                    <span>▶</span>
+                    <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(h.title)}</span>
+                    <span class="del" data-index="${i}">✕</span>
+                </div>
+            `).join("");
+
+            historyList.querySelectorAll(".history-item").forEach(item => {
+                item.addEventListener("click", (e) => {
+                    if (e.target.classList.contains("del")) return;
+                    const url = item.dataset.url;
+                    urlInput.value = url;
+                    playVideo(url);
+                });
+            });
+            historyList.querySelectorAll(".del").forEach(del => {
+                del.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(del.dataset.index);
+                    playbackHistory.splice(idx, 1);
+                    localStorage.setItem("vf_history", JSON.stringify(playbackHistory));
+                    renderHistory();
+                });
+            });
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function playVideo(url) {
+            if (!url) return showToast("请输入视频地址");
+            
+            // Auto-fix commonly broken HLS URLs
+            let fixedUrl = url.trim();
+            
+            video.src = fixedUrl;
+            video.classList.add("active");
+            placeholder.classList.add("hidden");
+            infoPanel.style.display = "block";
+            
+            const displayUrl = fixedUrl.length > 60 ? fixedUrl.slice(0, 60) + "…" : fixedUrl;
+            infoTitle.textContent = "正在播放";
+            infoUrl.textContent = displayUrl;
+            
+            video.load();
+            video.play().catch(() => {
+                video.muted = true;
+                video.play().catch(() => showToast("无法播放此地址，请检查 URL"));
+            });
+            
+            saveHistory(fixedUrl, fixedUrl);
+        }
+
+        playBtn.addEventListener("click", () => playVideo(urlInput.value));
+        urlInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") playVideo(urlInput.value);
+        });
+
+        // Quick links
+        document.getElementById("quickLinks").addEventListener("click", (e) => {
+            if (e.target.tagName === "BUTTON" && e.target.dataset.url) {
+                urlInput.value = e.target.dataset.url;
+                playVideo(e.target.dataset.url);
+            }
+        });
+
+        // Controls
+        document.getElementById("pipBtn").addEventListener("click", async () => {
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else if (document.pictureInPictureEnabled) {
+                    await video.requestPictureInPicture();
+                }
+            } catch (err) {
+                showToast("画中画不可用");
+            }
+        });
+
+        document.getElementById("fullscreenBtn").addEventListener("click", () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                video.requestFullscreen().catch(() => showToast("全屏不可用"));
+            }
+        });
+
+        let loopOn = false;
+        document.getElementById("loopBtn").addEventListener("click", function() {
+            loopOn = !loopOn;
+            video.loop = loopOn;
+            this.classList.toggle("on", loopOn);
+            showToast(loopOn ? "循环播放: 开" : "循环播放: 关");
+        });
+
+        let speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+        let speedIdx = 2;
+        document.getElementById("speedBtn").addEventListener("click", function() {
+            speedIdx = (speedIdx + 1) % speeds.length;
+            video.playbackRate = speeds[speedIdx];
+            this.textContent = speeds[speedIdx].toFixed(1) + "x";
+            showToast("播放速度: " + speeds[speedIdx].toFixed(1) + "x");
+        });
+
+        document.getElementById("castBtn").addEventListener("click", () => {
+            showToast("请在浏览器菜单中选择「投屏」或「Cast」");
+        });
+
+        // Handle HLS errors gracefully - provide fallback
+        video.addEventListener("error", () => {
+            const err = video.error;
+            if (err && err.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+                showToast("格式不支持，尝试用 HLS.js 加载…");
+                loadHlsJs(urlInput.value || video.src);
+            }
+        });
+
+        function loadHlsJs(url) {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/hls.js@latest";
+            script.onload = () => {
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play().catch(() => {});
+                    });
+                    showToast("已启用 HLS.js 解码");
+                } else {
+                    showToast("当前浏览器不支持此格式");
+                }
+            };
+            script.onerror = () => showToast("加载解码器失败");
+            document.head.appendChild(script);
+        }
+
+        // Paste from clipboard support
+        document.addEventListener("paste", (e) => {
+            const text = e.clipboardData?.getData("text");
+            if (text && document.activeElement !== urlInput && text.match(/^https?:\/\//)) {
+                urlInput.value = text;
+                showToast("已粘贴链接，点击播放");
+            }
+        });
+
+        // Init
+        renderHistory();
+        urlInput.focus();
+    </script>
+</body>
+</html>
