@@ -1,0 +1,21 @@
+name: Build APK
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {java-version: '17', distribution: 'temurin'}
+      - run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          curl -sLO https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q *.zip && mv cmdline-tools latest
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+      - run: yes | sdkmanager --licenses && sdkmanager "platforms;android-34" "build-tools;34.0.0"
+      - uses: gradle/actions/setup-gradle@v3
+      - run: cd android && gradle wrapper && ./gradlew assembleRelease
+      - uses: actions/upload-artifact@v4
+        with: {name: APK, path: android/app/build/outputs/apk/release/app-release-unsigned.apk}
