@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>VideoFree 浏览器</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0f0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:20px 16px;-webkit-tap-highlight-color:transparent}
+.logo{font-size:28px;font-weight:700;color:#ff4757;margin-top:50px;margin-bottom:6px}
+.sub{font-size:13px;color:#666;margin-bottom:24px}
+
+.search-box{width:100%;max-width:420px;display:flex;gap:8px;margin-bottom:6px}
+.search-box input{flex:1;padding:14px 18px;border:2px solid #333;border-radius:24px;background:#1c1c1c;color:#fff;font-size:15px;outline:none;transition:border 0.2s}
+.search-box input:focus{border-color:#ff4757}
+.search-box button{padding:14px 22px;border:none;border-radius:24px;background:#ff4757;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.hint{font-size:11px;color:#555;margin-bottom:28px;max-width:420px;width:100%}
+
+.bookmarks{width:100%;max-width:420px}
+.bookmarks h3{font-size:12px;color:#666;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.bm{background:#1c1c1c;border:1px solid #2a2a2a;border-radius:14px;padding:16px 8px;text-align:center;cursor:pointer;transition:all 0.15s;text-decoration:none;color:#ccc;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bm:active{background:#2a2a2a;border-color:#ff4757}
+.bm .icon{font-size:28px}
+
+.footer{font-size:11px;color:#444;margin-top:auto;padding-top:30px}
+</style>
+</head>
+<body>
+<div class="logo">🌐 VideoFree</div>
+<div class="sub">自由浏览器</div>
+
+<div class="search-box">
+    <input type="url" id="urlInput" placeholder="输入网址或搜索关键词…" autocomplete="off" autofocus>
+    <button id="goBtn">前往</button>
+</div>
+<div class="hint">输入网址直接访问，输入关键词自动搜索</div>
+
+<div class="bookmarks">
+    <h3>📌 常用网站</h3>
+    <div class="grid">
+        <div class="bm" data-url="https://m.baidu.com"><span class="icon">🔍</span>百度</div>
+        <div class="bm" data-url="https://m.bilibili.com"><span class="icon">📺</span>B站</div>
+        <div class="bm" data-url="https://m.weibo.cn"><span class="icon">📢</span>微博</div>
+        <div class="bm" data-url="https://m.zhihu.com"><span class="icon">💡</span>知乎</div>
+        <div class="bm" data-url="https://m.douban.com"><span class="icon">📚</span>豆瓣</div>
+        <div class="bm" data-url="https://m.jd.com"><span class="icon">🛒</span>京东</div>
+        <div class="bm" data-url="https://m.taobao.com"><span class="icon">🛍</span>淘宝</div>
+        <div class="bm" data-url="https://github.com"><span class="icon">💻</span>GitHub</div>
+        <div class="bm" data-url="https://www.youtube.com"><span class="icon">🎬</span>YouTube</div>
+    </div>
+
+    <h3>🎬 视频网站</h3>
+    <div class="grid">
+        <div class="bm" data-url="https://kici5329-dot.github.io/videofree/"><span class="icon">▶</span>VideoFree</div>
+        <div class="bm" data-url="https://m.iqiyi.com"><span class="icon">📺</span>爱奇艺</div>
+        <div class="bm" data-url="https://m.youku.com"><span class="icon">🎬</span>优酷</div>
+    </div>
+</div>
+
+<div class="footer">点击书签或输入网址开始浏览</div>
+
+<script>
+function navigate(url) {
+    if (!url || !url.trim()) return;
+    url = url.trim();
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        if (url.includes(".") && !url.includes(" ")) {
+            url = "https://" + url;
+        } else {
+            url = "https://m.baidu.com/s?word=" + encodeURIComponent(url);
+        }
+    }
+    window.location.href = url;
+}
+
+document.getElementById("goBtn").addEventListener("click", function(){
+    navigate(document.getElementById("urlInput").value);
+});
+document.getElementById("urlInput").addEventListener("keydown", function(e){
+    if (e.key === "Enter") navigate(this.value);
+});
+
+document.querySelectorAll(".bm").forEach(function(bm){
+    bm.addEventListener("click", function(){
+        navigate(this.dataset.url);
+    });
+});
+</script>
+</body>
+</html>
